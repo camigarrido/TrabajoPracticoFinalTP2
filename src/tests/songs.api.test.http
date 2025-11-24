@@ -1,6 +1,6 @@
 @Host=http://127.0.0.1
 @Port=3001
-@EndpointTemplate = /api/spotify
+@EndpointTemplate = api/songs
 
 ## Get all songs
 GET  {{Host}}:{{Port}}/{{EndpointTemplate}}/all
@@ -20,7 +20,7 @@ Content-Type: application/json
 
 {
     "title": "New Song",
-    "realase_year": 2024,
+    "realase_year": 2024
 }
 
 ## Update a song by ID

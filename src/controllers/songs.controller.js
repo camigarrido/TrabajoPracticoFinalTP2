@@ -1,4 +1,4 @@
-import { SongsRepository } from '../repository/songs.mogoose.repository.js'
+import  SongsRepository  from '../repositories/songs.mongoose.repository.js'
 /* import { validateName } from '../validators/validators.model.js' */
 
  export const SongsController = {
