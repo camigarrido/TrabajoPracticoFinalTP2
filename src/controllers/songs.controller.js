@@ -73,7 +73,7 @@ import  SongsRepository  from '../repositories/songs.mongoose.repository.js'
                 })
                 return
             }
-            const newSong = await CancionesRepository.createSong({ title, release_year })
+            const newSong = await SongsRepository.createSong( title, release_year )
 
             response.status(201).json({
                 ok: true,

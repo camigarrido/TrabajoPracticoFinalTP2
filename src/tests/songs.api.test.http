@@ -1,6 +1,6 @@
 @Host=http://127.0.0.1
-@Port=3001
-@EndpointTemplate = api/songs
+@Port=3004
+@EndpointTemplate=api/songs
 
 ## Get all songs
 GET  {{Host}}:{{Port}}/{{EndpointTemplate}}/all
@@ -20,7 +20,7 @@ Content-Type: application/json
 
 {
     "title": "New Song",
-    "realase_year": 2024
+    "release_year": 2024
 }
 
 ## Update a song by ID
@@ -30,4 +30,12 @@ Content-Type: application/json
     "id": 10,
     "title": "Updated Song Title",
     "realase_year": 2023
+}
+
+POST  http://127.0.0.1:3001/api/songs/create
+Content-Type: application/json
+
+{
+    "title": "New Song",
+    "release_year": 2024
 }
