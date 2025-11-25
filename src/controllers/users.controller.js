@@ -1,5 +1,5 @@
 import UsersRepository from "../repositories/users.mongoose.repository.js";
-import bcrypt from 'bcrypt';
+import bcrypt from "bcrypt";
 
 export const UsersController = {
 	getAllUsers: async (request, response) => {
@@ -42,13 +42,13 @@ export const UsersController = {
 		try {
 			const { id } = request.params;
 			const user = await UsersRepository.getUserById(id);
-			
+
 			if (!user) {
-				return response.status(422).json({ 
-					error: "El usuario no existe" 
+				return response.status(422).json({
+					error: "El usuario no existe",
 				});
 			}
-			
+
 			await UsersRepository.deleteUser(id);
 			response.json({
 				code: 200,
@@ -68,7 +68,7 @@ export const UsersController = {
 	createByJson: async (request, response) => {
 		try {
 			const { name, email, password, age, role } = request.body;
-			
+
 			if (!name || !email || !password) {
 				return response.status(422).json({
 					message: "Faltan datos obligatorios: name, email y password",
@@ -97,7 +97,7 @@ export const UsersController = {
 				email,
 				password: hashedPassword,
 				age,
-				role: role || 'user'
+				role: role || "user",
 			});
 
 			response.status(201).json({
@@ -123,7 +123,7 @@ export const UsersController = {
 	updateByJson: async (request, response) => {
 		try {
 			const { id, name, email, age, role, isActive } = request.body;
-			
+
 			if (!id) {
 				return response.status(422).json({
 					message: "El id es obligatorio para actualizar el usuario",
@@ -154,7 +154,7 @@ export const UsersController = {
 			if (isActive !== undefined) updateData.isActive = isActive;
 
 			const updated = await UsersRepository.updateUser(id, updateData);
-			
+
 			response.status(200).json({
 				ok: true,
 				payload: {
@@ -164,7 +164,10 @@ export const UsersController = {
 			});
 		} catch (error) {
 			console.log("Error al actualizar el usuario", error.message);
-			if (error.message.includes("no encontrado") || error.message.includes("not found")) {
+			if (
+				error.message.includes("no encontrado") ||
+				error.message.includes("not found")
+			) {
 				return response.status(404).json({
 					message: "Usuario no encontrado",
 				});
@@ -192,7 +195,7 @@ export const UsersController = {
 			}
 
 			const updated = await UsersRepository.updateUserStatus(id, isActive);
-			
+
 			response.status(200).json({
 				ok: true,
 				payload: {

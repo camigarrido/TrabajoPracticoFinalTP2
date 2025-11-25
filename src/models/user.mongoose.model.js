@@ -24,8 +24,8 @@ const userSchema = new Schema(
 		},
 		role: {
 			type: String,
-			enum: ['user', 'admin'],
-			default: 'user',
+			enum: ["user", "admin"],
+			default: "user",
 		},
 		isActive: {
 			type: Boolean,
@@ -35,7 +35,7 @@ const userSchema = new Schema(
 	{
 		collection: "users",
 		versionKey: false,
-		timestamps: true, 
+		timestamps: true,
 	},
 );
 

@@ -7,7 +7,7 @@ class UsersRepository {
 
 	async getAll() {
 		try {
-			return await this.UsersModel.find({}).select('-password');
+			return await this.UsersModel.find({}).select("-password");
 		} catch (error) {
 			throw new Error("Error al obtener los usuarios: " + error.message);
 		}
@@ -15,7 +15,7 @@ class UsersRepository {
 
 	async getUserById(id) {
 		try {
-			const user = await this.UsersModel.findById(id).select('-password');
+			const user = await this.UsersModel.findById(id).select("-password");
 			return user;
 		} catch (error) {
 			console.error("Error al obtener el usuario:", error);
@@ -29,7 +29,9 @@ class UsersRepository {
 			return user;
 		} catch (error) {
 			console.error("Error al obtener el usuario por email:", error);
-			throw new Error("Error al obtener el usuario por email: " + error.message);
+			throw new Error(
+				"Error al obtener el usuario por email: " + error.message,
+			);
 		}
 	}
 
@@ -54,9 +56,9 @@ class UsersRepository {
 			const updatedUser = await this.UsersModel.findByIdAndUpdate(
 				id,
 				updateData,
-				{ new: true, runValidators: true }
-			).select('-password');
-			
+				{ new: true, runValidators: true },
+			).select("-password");
+
 			if (!updatedUser) {
 				throw new Error(`Usuario con id ${id} no encontrado para actualizar`);
 			}
@@ -88,16 +90,18 @@ class UsersRepository {
 			const updatedUser = await this.UsersModel.findByIdAndUpdate(
 				id,
 				{ isActive },
-				{ new: true }
-			).select('-password');
-			
+				{ new: true },
+			).select("-password");
+
 			if (!updatedUser) {
 				throw new Error(`Usuario con id ${id} no encontrado`);
 			}
 			return updatedUser;
 		} catch (error) {
 			console.error("Error al actualizar el estado del usuario:", error);
-			throw new Error("Error al actualizar el estado del usuario: " + error.message);
+			throw new Error(
+				"Error al actualizar el estado del usuario: " + error.message,
+			);
 		}
 	}
 }
