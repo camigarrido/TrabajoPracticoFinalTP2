@@ -4,6 +4,7 @@ class SongsRepository {
 	constructor(songsModel = SongModel) {
 		this.SongsModel = songsModel;
 	}
+
 	async getAll() {
 		try {
 			return await this.SongsModel.find({});
@@ -18,6 +19,7 @@ class SongsRepository {
 			if (!song) {
 				throw new Error(`Cancion con id ${id} no encontrada`);
 			}
+			return song; // Added missing return
 		} catch (error) {
 			console.error("Error al obtener la cancion:", error);
 			throw new Error("Error al obtener la cancion: " + error.message);

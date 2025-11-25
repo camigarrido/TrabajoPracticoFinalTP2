@@ -1,35 +1,15 @@
 @Host=http://127.0.0.1
 @Port=3004
 @EndpointTemplate = api/users
-@userId = 
-### Obtener todos los usuarios
-GET {{Host}}:{{Port}}{{EndpointTemplate}}/all
-Content-Type: application/json
 
-###
+# ALTERNATIVE: Use manual token setting if script blocks don't work
+@admin_token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY5MjUwZmI4ZmJiNzQ0OWI1NjFhMGVmMyIsImVtYWlsIjoiYWRtaW5AZXhhbXBsZS5jb20iLCJuYW1lIjoiQWRtaW4gVXNlciIsInJvbGUiOiJhZG1pbiIsImlhdCI6MTc2NDAzNjgyNCwiZXhwIjoxNzY0MTIzMjI0fQ.4iYs39j1uHZevMvfD8QasfMFsdsi_FRW2BkmY9l0CjY
+@user_token = peyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY5MjUxOTYyZjhiYTgwZTkwN2I1OWFmNSIsImVtYWlsIjoianVhbi5wZXJlekBleGFtcGxlLmNvbSIsIm5hbWUiOiJKdWFuIFDDqXJleiIsInJvbGUiOiJ1c2VyIiwiaWF0IjoxNzY0MDM5MDMyLCJleHAiOjE3NjQxMjU0MzJ9.GzUrBpNgLfES6WQlhOwmVCEyZUJVBo8yw26ZbXyUtzA
+@admin_user_id = 69250fb8fbb7449b561a0ef3
+@user_id = 69251962f8ba80e907b59af5
 
-### Obtener usuario por ID
-GET {{Host}}:{{Port}}/{{EndpointTemplate}}/user/{{userId}}
-Content-Type: application/json
-
-###
-
-### Crear un nuevo usuario
-POST {{Host}}:{{Port}}{{EndpointTemplate}}/create
-Content-Type: application/json
-
-{
-  "name": "Juan Pérez",
-  "email": "juan.perez@example.com",
-  "password": "password123",
-  "age": 25,
-  "role": "user"
-}
-
-###
-
-### Crear un usuario admin
-POST {{Host}}:{{Port}}{{EndpointTemplate}}/create
+### 1. Crear usuario admin (para testing)
+POST {{Host}}:{{Port}}/{{EndpointTemplate}}/create
 Content-Type: application/json
 
 {
@@ -42,12 +22,75 @@ Content-Type: application/json
 
 ###
 
-### Actualizar usuario
-PATCH {{Host}}:{{Port}}{{EndpointTemplate}}/update
+### 2. Login de usuario admin (SIMPLE - sin variables dinámicas)
+POST {{Host}}:{{Port}}/{{EndpointTemplate}}/login
 Content-Type: application/json
 
 {
-  "id": "{{userId}}",
+  "email": "admin@example.com",
+  "password": "admin123"
+}
+
+###
+
+### 2b. Login de usuario admin (CON variables dinámicas)
+POST {{Host}}:{{Port}}/{{EndpointTemplate}}/login
+Content-Type: application/json
+
+{
+  "email": "admin@example.com",
+  "password": "admin123"
+}
+
+###
+
+### 3. Crear usuario regular
+POST {{Host}}:{{Port}}/{{EndpointTemplate}}/create
+Content-Type: application/json
+
+{
+  "name": "Juan Pérez",
+  "email": "juan.perez@example.com",
+  "password": "password123",
+  "age": 25,
+  "role": "user"
+}
+
+###
+
+### 4. Login de usuario regular
+POST {{Host}}:{{Port}}/{{EndpointTemplate}}/login
+Content-Type: application/json
+
+{
+  "email": "juan.perez@example.com",
+  "password": "password123"
+}
+
+
+###
+
+### 5. Obtener todos los usuarios (usa token admin)
+GET {{Host}}:{{Port}}/{{EndpointTemplate}}/all
+Authorization: Bearer {{admin_token}}
+Content-Type: application/json
+
+###
+
+### 6. Obtener usuario por ID (usa token admin)
+GET {{Host}}:{{Port}}/{{EndpointTemplate}}/user/{{admin_user_id}}
+Authorization: Bearer {{admin_token}}
+Content-Type: application/json
+
+###
+
+### 7. Actualizar usuario propio (usa token de usuario regular)
+PATCH {{Host}}:{{Port}}/{{EndpointTemplate}}/update
+Authorization: Bearer {{user_token}}
+Content-Type: application/json
+
+{
+  "id": "{{user_id}}",
   "name": "Juan Carlos Pérez",
   "email": "juan.carlos@example.com",
   "age": 26
@@ -55,8 +98,9 @@ Content-Type: application/json
 
 ###
 
-### Actualizar estado del usuario
-PATCH {{Host}}:{{Port}}{{EndpointTemplate}}/status/{{userId}}
+### 8. Actualizar estado del usuario (usa token admin)
+PATCH {{Host}}:{{Port}}/{{EndpointTemplate}}/status/{{user_id}}
+Authorization: Bearer {{admin_token}}
 Content-Type: application/json
 
 {
@@ -65,8 +109,16 @@ Content-Type: application/json
 
 ###
 
-### Eliminar usuario
-DELETE {{Host}}:{{Port}}{{EndpointTemplate}}/delete/{{userId}}
+### 9. Eliminar usuario (usa token admin O token del propio usuario)
+DELETE {{Host}}:{{Port}}/{{EndpointTemplate}}/delete/{{user_id}}
+Authorization: Bearer {{admin_token}}
+Content-Type: application/json
+
+###
+
+### 9b. Eliminar usuario propio (usa token del usuario regular)
+DELETE {{Host}}:{{Port}}/{{EndpointTemplate}}/delete/{{user_id}}
+Authorization: Bearer {{user_token}}
 Content-Type: application/json
 
 ###

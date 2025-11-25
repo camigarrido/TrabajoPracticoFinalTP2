@@ -2,32 +2,104 @@
 @Port=3004
 @EndpointTemplate = api/songs
 
-## Get all songs
-GET  {{Host}}:{{Port}}/{{EndpointTemplate}}/all
-
-## Get song by ID
-GET  {{Host}}:{{Port}}/{{EndpointTemplate}}/song/6924d615d75a06595b4de595
-
-## Get songs by artist 
+# Songs API Authentication Test
+# - GET operations: require authentication
+# - POST: authenticated users can create
+# - PATCH: only song owner can update
+# - DELETE: song owner or admin can delete
 
 
-## DELETE song by ID
-DELETE  {{Host}}:{{Port}}/{{EndpointTemplate}}/delete/6924ec79fa60f9f998552e6b
+# ALTERNATIVE: Use manual token setting if script blocks don't work
+@admin_token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY5MjUwZmI4ZmJiNzQ0OWI1NjFhMGVmMyIsImVtYWlsIjoiYWRtaW5AZXhhbXBsZS5jb20iLCJuYW1lIjoiQWRtaW4gVXNlciIsInJvbGUiOiJhZG1pbiIsImlhdCI6MTc2NDAzNjgyNCwiZXhwIjoxNzY0MTIzMjI0fQ.4iYs39j1uHZevMvfD8QasfMFsdsi_FRW2BkmY9l0CjY
+@user_token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY5MjUxOTYyZjhiYTgwZTkwN2I1OWFmNSIsImVtYWlsIjoianVhbi5wZXJlekBleGFtcGxlLmNvbSIsIm5hbWUiOiJKdWFuIFDDqXJleiIsInJvbGUiOiJ1c2VyIiwiaWF0IjoxNzY0MDM5OTU1LCJleHAiOjE3NjQxMjYzNTV9.3HJU1kE7xEisRCE1jvZXyNdrok5Igyrkyydpem2MXf8
+@user_id = 69251962f8ba80e907b59af5
+@user_song_id = paste
+@admin_song_id = paste
 
-## Create a new song
-POST  {{Host}}:{{Port}}/{{EndpointTemplate}}/create
+### 1. Intentar obtener canciones SIN autenticación (debería fallar)
+GET {{Host}}:{{Port}}/{{EndpointTemplate}}/all
+Content-Type: application/json
+
+###
+
+### 2. Crear canción con usuario admin
+POST {{Host}}:{{Port}}/{{EndpointTemplate}}/create
+Authorization: Bearer {{admin_token}}
 Content-Type: application/json
 
 {
-    "title": " Baby ",
-    "author": " Justin Bieber "
+  "title": "Bohemian Rhapsody",
+  "author": "Queen",
+  "release_year": 1975,
+  "language": "English",
+  "category": "Rock"
 }
 
-## Update a song by ID
-PATCH  {{Host}}:{{Port}}/{{EndpointTemplate}}/update
+###
+
+### 3. Crear canción con usuario regular
+POST {{Host}}:{{Port}}/{{EndpointTemplate}}/create
+Authorization: Bearer {{user_token}}
 Content-Type: application/json
+
 {
-    "id": " 6924e3b5dbfd2ab91103f468",
-    "title": "Updated Song Title",
-    "author": "Justin Bieber"
+  "title": "Imagine",
+  "author": "John Lennon",
+  "release_year": 1971,
+  "language": "English",
+  "category": "Pop"
 }
+
+###
+
+### 4. Obtener todas las canciones (con token admin)
+GET {{Host}}:{{Port}}/{{EndpointTemplate}}/all
+Authorization: Bearer {{admin_token}}
+Content-Type: application/json
+
+###
+
+### 5. Obtener canción específica (con token admin)
+GET {{Host}}:{{Port}}/{{EndpointTemplate}}/song/{{admin_song_id}}
+Authorization: Bearer {{admin_token}}
+Content-Type: application/json
+
+###
+
+### 6. Intentar actualizar canción de admin con token de usuario (debería fallar)
+PATCH {{Host}}:{{Port}}/{{EndpointTemplate}}/update
+Authorization: Bearer {{admin_token}}
+Content-Type: application/json
+
+{
+  "id": "{{user_song_id}}",
+  "title": "Imagine - Modified by Admin (should fail)"
+}
+
+###
+
+### 7. Actualizar canción propia (usuario actualiza su canción)
+PATCH {{Host}}:{{Port}}/{{EndpointTemplate}}/update
+Authorization: Bearer {{user_token}}
+Content-Type: application/json
+
+{
+  "id": "{{user_song_id}}",
+  "title": "Imagine - Updated by Owner"
+}
+
+###
+
+### 8. Borrar canción con admin (admin puede borrar cualquier canción)
+DELETE {{Host}}:{{Port}}/{{EndpointTemplate}}/delete/{{user_song_id}}
+Authorization: Bearer {{admin_token}}
+Content-Type: application/json
+
+###
+
+### 9. Borrar canción propia (dueño puede borrar su canción)
+DELETE {{Host}}:{{Port}}/{{EndpointTemplate}}/delete/{{admin_song_id}}
+Authorization: Bearer {{admin_token}}
+Content-Type: application/json
+
+###

@@ -1,5 +1,6 @@
 import UsersRepository from "../repositories/users.mongoose.repository.js";
-import bcrypt from "bcrypt";
+import bcrypt from 'bcrypt';
+import { signToken } from '../auth/index.js';
 
 export const UsersController = {
 	getAllUsers: async (request, response) => {
@@ -114,6 +115,70 @@ export const UsersController = {
 					message: error.message,
 				});
 			}
+			response.status(500).json({
+				message: "Error interno del servidor",
+			});
+		}
+	},
+
+	login: async (request, response) => {
+		try {
+			const { email, password } = request.body;
+
+			// Validación de datos obligatorios
+			if (!email || !password) {
+				return response.status(422).json({
+					message: "Faltan datos obligatorios: email y password",
+				});
+			}
+
+			// Buscar usuario por email
+			const user = await UsersRepository.getUserByEmail(email);
+			if (!user) {
+				return response.status(401).json({
+					message: "Credenciales inválidas",
+				});
+			}
+
+			// Verificar si el usuario está activo
+			if (!user.isActive) {
+				return response.status(401).json({
+					message: "Usuario inactivo",
+				});
+			}
+
+			// Verificar contraseña
+			const isValidPassword = await bcrypt.compare(password, user.password);
+			if (!isValidPassword) {
+				return response.status(401).json({
+					message: "Credenciales inválidas",
+				});
+			}
+
+			// Generar token JWT
+			const token = signToken({
+				id: user._id.toString(),
+				email: user.email,
+				name: user.name,
+				role: user.role,
+			});
+
+			response.status(200).json({
+				ok: true,
+				payload: {
+					message: "Login exitoso",
+					token,
+					user: {
+						id: user._id,
+						name: user.name,
+						email: user.email,
+						role: user.role,
+						age: user.age,
+					},
+				},
+			});
+		} catch (error) {
+			console.log("Error en login", error.message);
 			response.status(500).json({
 				message: "Error interno del servidor",
 			});

@@ -1,13 +1,20 @@
 import express from "express";
 import { SongsController } from "../controllers/songs.controller.js";
+import { authenticateToken, requireSongOwner, requireSongOwnerOrAdmin } from "../middleware/authentication.js";
+
 const SongsRouter = express.Router();
 
-SongsRouter.get("/all", SongsController.getAllSongs);
+// Protected routes - authenticated users can read songs
+SongsRouter.get("/all", authenticateToken, SongsController.getAllSongs);
+SongsRouter.get("/song/:id", authenticateToken, SongsController.getById);
 
-//CRUD
-SongsRouter.get("/song/:id", SongsController.getById);
-SongsRouter.delete("/delete/:id", SongsController.deleteById);
-SongsRouter.post("/create", SongsController.createByJson);
-SongsRouter.patch("/update", SongsController.updateByJson);
+// Authenticated users can create songs
+SongsRouter.post("/create", authenticateToken, SongsController.createByJson);
+
+// Only song owner can update their songs
+SongsRouter.patch("/update", authenticateToken, requireSongOwner, SongsController.updateByJson);
+
+// Song owner or admin can delete songs
+SongsRouter.delete("/delete/:id", authenticateToken, requireSongOwnerOrAdmin, SongsController.deleteById);
 
 export default SongsRouter;

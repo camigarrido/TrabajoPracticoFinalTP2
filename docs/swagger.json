@@ -1,0 +1,1531 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "ORT TP2 API - Users and Songs Management",
+    "description": "API for managing users and songs with JWT authentication",
+    "version": "1.0.0",
+    "contact": {
+      "name": "API Support",
+      "email": "support@ort.edu.ar"
+    }
+  },
+  "servers": [
+    {
+      "url": "http://127.0.0.1:3004",
+      "description": "Development server"
+    }
+  ],
+  "security": [
+    {
+      "BearerAuth": []
+    }
+  ],
+  "paths": {
+    "/api/users/create": {
+      "post": {
+        "summary": "Create a new user",
+        "description": "Register a new user account",
+        "tags": ["Users"],
+        "security": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UserCreate"
+              },
+              "example": {
+                "name": "John Doe",
+                "email": "john.doe@example.com",
+                "password": "securepassword123",
+                "age": 25,
+                "role": "user"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "User created successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserResponse"
+                },
+                "example": {
+                  "ok": true,
+                  "payload": {
+                    "message": "Usuario creado exitosamente",
+                    "user": {
+                      "id": "64f1a2b3c4d5e6f7g8h9i0j1",
+                      "name": "John Doe",
+                      "email": "john.doe@example.com",
+                      "age": 25,
+                      "role": "user",
+                      "isActive": true,
+                      "createdAt": "2024-11-24T10:00:00.000Z",
+                      "updatedAt": "2024-11-24T10:00:00.000Z"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request - validation error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "ok": false,
+                  "error": "ValidationError",
+                  "message": "Email already exists"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/users/login": {
+      "post": {
+        "summary": "User login",
+        "description": "Authenticate user and return JWT token",
+        "tags": ["Users"],
+        "security": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UserLogin"
+              },
+              "example": {
+                "email": "john.doe@example.com",
+                "password": "securepassword123"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Login successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LoginResponse"
+                },
+                "example": {
+                  "ok": true,
+                  "payload": {
+                    "message": "Login exitoso",
+                    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+                    "user": {
+                      "id": "64f1a2b3c4d5e6f7g8h9i0j1",
+                      "name": "John Doe",
+                      "email": "john.doe@example.com",
+                      "role": "user",
+                      "age": 25
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Invalid credentials",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "ok": false,
+                  "error": "AuthenticationError",
+                  "message": "Credenciales inválidas"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/users/all": {
+      "get": {
+        "summary": "Get all users",
+        "description": "Retrieve a list of all users (admin only)",
+        "tags": ["Users"],
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Bearer token for authentication",
+            "example": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Users retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UsersListResponse"
+                },
+                "example": {
+                  "ok": true,
+                  "payload": [
+                    {
+                      "id": "64f1a2b3c4d5e6f7g8h9i0j1",
+                      "name": "John Doe",
+                      "email": "john.doe@example.com",
+                      "age": 25,
+                      "role": "user",
+                      "isActive": true,
+                      "createdAt": "2024-11-24T10:00:00.000Z"
+                    },
+                    {
+                      "id": "64f1a2b3c4d5e6f7g8h9i0j2",
+                      "name": "Admin User",
+                      "email": "admin@example.com",
+                      "age": 30,
+                      "role": "admin",
+                      "isActive": true,
+                      "createdAt": "2024-11-24T09:00:00.000Z"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - authentication required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "ok": false,
+                  "error": "AuthenticationError",
+                  "message": "Token not provided"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden - admin access required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/users/user/{id}": {
+      "get": {
+        "summary": "Get user by ID",
+        "description": "Retrieve a specific user by their ID",
+        "tags": ["Users"],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "User ID",
+            "example": "64f1a2b3c4d5e6f7g8h9i0j1"
+          },
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Bearer token for authentication",
+            "example": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "User retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserResponse"
+                },
+                "example": {
+                  "ok": true,
+                  "payload": {
+                    "id": "64f1a2b3c4d5e6f7g8h9i0j1",
+                    "name": "John Doe",
+                    "email": "john.doe@example.com",
+                    "age": 25,
+                    "role": "user",
+                    "isActive": true,
+                    "createdAt": "2024-11-24T10:00:00.000Z",
+                    "updatedAt": "2024-11-24T10:00:00.000Z"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - authentication required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "User not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "ok": false,
+                  "error": "NotFoundError",
+                  "message": "Usuario no encontrado"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/users/status/{id}": {
+      "patch": {
+        "summary": "Update user status",
+        "description": "Activate or deactivate a user account (admin only)",
+        "tags": ["Users"],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "User ID",
+            "example": "64f1a2b3c4d5e6f7g8h9i0j1"
+          },
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Bearer token for authentication",
+            "example": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UserStatusUpdate"
+              },
+              "example": {
+                "isActive": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "User status updated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessResponse"
+                },
+                "example": {
+                  "ok": true,
+                  "payload": {
+                    "message": "Estado del usuario actualizado exitosamente"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - authentication required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden - admin access required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "User not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/users/update": {
+      "patch": {
+        "summary": "Update user profile",
+        "description": "Update user information (owner or admin)",
+        "tags": ["Users"],
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Bearer token for authentication",
+            "example": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UserUpdate"
+              },
+              "example": {
+                "id": "64f1a2b3c4d5e6f7g8h9i0j1",
+                "name": "John Smith",
+                "email": "john.smith@example.com",
+                "age": 26
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "User updated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserResponse"
+                },
+                "example": {
+                  "ok": true,
+                  "payload": {
+                    "message": "Usuario actualizado exitosamente",
+                    "user": {
+                      "id": "64f1a2b3c4d5e6f7g8h9i0j1",
+                      "name": "John Smith",
+                      "email": "john.smith@example.com",
+                      "age": 26,
+                      "role": "user",
+                      "isActive": true,
+                      "updatedAt": "2024-11-24T11:00:00.000Z"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - authentication required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden - owner or admin access required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "User not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/users/delete/{id}": {
+      "delete": {
+        "summary": "Delete user",
+        "description": "Delete a user account (owner or admin)",
+        "tags": ["Users"],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "User ID",
+            "example": "64f1a2b3c4d5e6f7g8h9i0j1"
+          },
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Bearer token for authentication",
+            "example": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "User deleted successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessResponse"
+                },
+                "example": {
+                  "ok": true,
+                  "payload": {
+                    "message": "Usuario eliminado exitosamente"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - authentication required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden - owner or admin access required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "User not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/songs/all": {
+      "get": {
+        "summary": "Get all songs",
+        "description": "Retrieve a list of all songs",
+        "tags": ["Songs"],
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Bearer token for authentication",
+            "example": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Songs retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SongsListResponse"
+                },
+                "example": {
+                  "ok": true,
+                  "payload": [
+                    {
+                      "id": "64f1a2b3c4d5e6f7g8h9i0j3",
+                      "title": "Bohemian Rhapsody",
+                      "artist": "Queen",
+                      "album": "A Night at the Opera",
+                      "year": 1975,
+                      "genre": "Rock",
+                      "duration": 355,
+                      "createdBy": "64f1a2b3c4d5e6f7g8h9i0j1",
+                      "createdAt": "2024-11-24T10:30:00.000Z"
+                    },
+                    {
+                      "id": "64f1a2b3c4d5e6f7g8h9i0j4",
+                      "title": "Stairway to Heaven",
+                      "artist": "Led Zeppelin",
+                      "album": "Led Zeppelin IV",
+                      "year": 1971,
+                      "genre": "Rock",
+                      "duration": 482,
+                      "createdBy": "64f1a2b3c4d5e6f7g8h9i0j2",
+                      "createdAt": "2024-11-24T11:00:00.000Z"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - authentication required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/songs/song/{id}": {
+      "get": {
+        "summary": "Get song by ID",
+        "description": "Retrieve a specific song by its ID",
+        "tags": ["Songs"],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Song ID",
+            "example": "64f1a2b3c4d5e6f7g8h9i0j3"
+          },
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Bearer token for authentication",
+            "example": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Song retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SongResponse"
+                },
+                "example": {
+                  "ok": true,
+                  "payload": {
+                    "id": "64f1a2b3c4d5e6f7g8h9i0j3",
+                    "title": "Bohemian Rhapsody",
+                    "artist": "Queen",
+                    "album": "A Night at the Opera",
+                    "year": 1975,
+                    "genre": "Rock",
+                    "duration": 355,
+                    "createdBy": "64f1a2b3c4d5e6f7g8h9i0j1",
+                    "createdAt": "2024-11-24T10:30:00.000Z",
+                    "updatedAt": "2024-11-24T10:30:00.000Z"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - authentication required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Song not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "ok": false,
+                  "error": "NotFoundError",
+                  "message": "Canción no encontrada"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/songs/create": {
+      "post": {
+        "summary": "Create a new song",
+        "description": "Add a new song to the collection",
+        "tags": ["Songs"],
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Bearer token for authentication",
+            "example": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SongCreate"
+              },
+              "example": {
+                "title": "Imagine",
+                "artist": "John Lennon",
+                "album": "Imagine",
+                "year": 1971,
+                "genre": "Pop",
+                "duration": 183
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Song created successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SongResponse"
+                },
+                "example": {
+                  "ok": true,
+                  "payload": {
+                    "message": "Canción creada exitosamente",
+                    "song": {
+                      "id": "64f1a2b3c4d5e6f7g8h9i0j5",
+                      "title": "Imagine",
+                      "artist": "John Lennon",
+                      "album": "Imagine",
+                      "year": 1971,
+                      "genre": "Pop",
+                      "duration": 183,
+                      "createdBy": "64f1a2b3c4d5e6f7g8h9i0j1",
+                      "createdAt": "2024-11-24T12:00:00.000Z",
+                      "updatedAt": "2024-11-24T12:00:00.000Z"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - authentication required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request - validation error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/songs/update": {
+      "patch": {
+        "summary": "Update song",
+        "description": "Update song information (owner only)",
+        "tags": ["Songs"],
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Bearer token for authentication",
+            "example": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SongUpdate"
+              },
+              "example": {
+                "id": "64f1a2b3c4d5e6f7g8h9i0j3",
+                "title": "Bohemian Rhapsody (Remastered)",
+                "artist": "Queen",
+                "album": "A Night at the Opera (Deluxe Edition)",
+                "year": 1975,
+                "genre": "Classic Rock",
+                "duration": 355
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Song updated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SongResponse"
+                },
+                "example": {
+                  "ok": true,
+                  "payload": {
+                    "message": "Canción actualizada exitosamente",
+                    "song": {
+                      "id": "64f1a2b3c4d5e6f7g8h9i0j3",
+                      "title": "Bohemian Rhapsody (Remastered)",
+                      "artist": "Queen",
+                      "album": "A Night at the Opera (Deluxe Edition)",
+                      "year": 1975,
+                      "genre": "Classic Rock",
+                      "duration": 355,
+                      "createdBy": "64f1a2b3c4d5e6f7g8h9i0j1",
+                      "updatedAt": "2024-11-24T13:00:00.000Z"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - authentication required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden - owner access required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "ok": false,
+                  "error": "ForbiddenError",
+                  "message": "You can only modify your own resources"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Song not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/songs/delete/{id}": {
+      "delete": {
+        "summary": "Delete song",
+        "description": "Delete a song (owner or admin)",
+        "tags": ["Songs"],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Song ID",
+            "example": "64f1a2b3c4d5e6f7g8h9i0j3"
+          },
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Bearer token for authentication",
+            "example": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Song deleted successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessResponse"
+                },
+                "example": {
+                  "ok": true,
+                  "payload": {
+                    "message": "Canción eliminada exitosamente"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - authentication required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden - owner or admin access required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Song not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "BearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
+    },
+    "schemas": {
+      "UserCreate": {
+        "type": "object",
+        "required": ["name", "email", "password"],
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 100,
+            "description": "User's full name"
+          },
+          "email": {
+            "type": "string",
+            "maxLength": 200,
+            "format": "email",
+            "description": "User's email address"
+          },
+          "password": {
+            "type": "string",
+            "description": "User's password"
+          },
+          "age": {
+            "type": "number",
+            "minimum": 13,
+            "description": "User's age"
+          },
+          "role": {
+            "type": "string",
+            "enum": ["user", "admin"],
+            "default": "user",
+            "description": "User's role"
+          }
+        }
+      },
+      "UserLogin": {
+        "type": "object",
+        "required": ["email", "password"],
+        "properties": {
+          "email": {
+            "type": "string",
+            "format": "email",
+            "description": "User's email address"
+          },
+          "password": {
+            "type": "string",
+            "description": "User's password"
+          }
+        }
+      },
+      "UserUpdate": {
+        "type": "object",
+        "required": ["id"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "User ID to update"
+          },
+          "name": {
+            "type": "string",
+            "maxLength": 100,
+            "description": "User's full name"
+          },
+          "email": {
+            "type": "string",
+            "maxLength": 200,
+            "format": "email",
+            "description": "User's email address"
+          },
+          "age": {
+            "type": "number",
+            "minimum": 13,
+            "description": "User's age"
+          }
+        }
+      },
+      "UserStatusUpdate": {
+        "type": "object",
+        "required": ["isActive"],
+        "properties": {
+          "isActive": {
+            "type": "boolean",
+            "description": "User account status"
+          }
+        }
+      },
+      "SongCreate": {
+        "type": "object",
+        "required": ["title", "artist", "album", "year", "genre", "duration"],
+        "properties": {
+          "title": {
+            "type": "string",
+            "maxLength": 200,
+            "description": "Song title"
+          },
+          "artist": {
+            "type": "string",
+            "maxLength": 100,
+            "description": "Song artist"
+          },
+          "album": {
+            "type": "string",
+            "maxLength": 200,
+            "description": "Song album"
+          },
+          "year": {
+            "type": "number",
+            "minimum": 1900,
+            "maximum": 2100,
+            "description": "Release year"
+          },
+          "genre": {
+            "type": "string",
+            "maxLength": 50,
+            "description": "Song genre"
+          },
+          "duration": {
+            "type": "number",
+            "minimum": 1,
+            "description": "Duration in seconds"
+          }
+        }
+      },
+      "SongUpdate": {
+        "type": "object",
+        "required": ["id"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Song ID to update"
+          },
+          "title": {
+            "type": "string",
+            "maxLength": 200,
+            "description": "Song title"
+          },
+          "artist": {
+            "type": "string",
+            "maxLength": 100,
+            "description": "Song artist"
+          },
+          "album": {
+            "type": "string",
+            "maxLength": 200,
+            "description": "Song album"
+          },
+          "year": {
+            "type": "number",
+            "minimum": 1900,
+            "maximum": 2100,
+            "description": "Release year"
+          },
+          "genre": {
+            "type": "string",
+            "maxLength": 50,
+            "description": "Song genre"
+          },
+          "duration": {
+            "type": "number",
+            "minimum": 1,
+            "description": "Duration in seconds"
+          }
+        }
+      },
+      "User": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "User ID"
+          },
+          "name": {
+            "type": "string",
+            "description": "User's full name"
+          },
+          "email": {
+            "type": "string",
+            "format": "email",
+            "description": "User's email address"
+          },
+          "age": {
+            "type": "number",
+            "description": "User's age"
+          },
+          "role": {
+            "type": "string",
+            "enum": ["user", "admin"],
+            "description": "User's role"
+          },
+          "isActive": {
+            "type": "boolean",
+            "description": "Account status"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Creation timestamp"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Last update timestamp"
+          }
+        }
+      },
+      "Song": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Song ID"
+          },
+          "title": {
+            "type": "string",
+            "description": "Song title"
+          },
+          "artist": {
+            "type": "string",
+            "description": "Song artist"
+          },
+          "album": {
+            "type": "string",
+            "description": "Song album"
+          },
+          "year": {
+            "type": "number",
+            "description": "Release year"
+          },
+          "genre": {
+            "type": "string",
+            "description": "Song genre"
+          },
+          "duration": {
+            "type": "number",
+            "description": "Duration in seconds"
+          },
+          "createdBy": {
+            "type": "string",
+            "description": "ID of user who created the song"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Creation timestamp"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Last update timestamp"
+          }
+        }
+      },
+      "UserResponse": {
+        "type": "object",
+        "properties": {
+          "ok": {
+            "type": "boolean"
+          },
+          "payload": {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/User"
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "message": {
+                    "type": "string"
+                  },
+                  "user": {
+                    "$ref": "#/components/schemas/User"
+                  }
+                }
+              }
+            ]
+          }
+        }
+      },
+      "UsersListResponse": {
+        "type": "object",
+        "properties": {
+          "ok": {
+            "type": "boolean"
+          },
+          "payload": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/User"
+            }
+          }
+        }
+      },
+      "SongResponse": {
+        "type": "object",
+        "properties": {
+          "ok": {
+            "type": "boolean"
+          },
+          "payload": {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/Song"
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "message": {
+                    "type": "string"
+                  },
+                  "song": {
+                    "$ref": "#/components/schemas/Song"
+                  }
+                }
+              }
+            ]
+          }
+        }
+      },
+      "SongsListResponse": {
+        "type": "object",
+        "properties": {
+          "ok": {
+            "type": "boolean"
+          },
+          "payload": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Song"
+            }
+          }
+        }
+      },
+      "LoginResponse": {
+        "type": "object",
+        "properties": {
+          "ok": {
+            "type": "boolean"
+          },
+          "payload": {
+            "type": "object",
+            "properties": {
+              "message": {
+                "type": "string"
+              },
+              "token": {
+                "type": "string",
+                "description": "JWT token"
+              },
+              "user": {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  },
+                  "name": {
+                    "type": "string"
+                  },
+                  "email": {
+                    "type": "string"
+                  },
+                  "role": {
+                    "type": "string"
+                  },
+                  "age": {
+                    "type": "number"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "SuccessResponse": {
+        "type": "object",
+        "properties": {
+          "ok": {
+            "type": "boolean"
+          },
+          "payload": {
+            "type": "object",
+            "properties": {
+              "message": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      },
+      "ErrorResponse": {
+        "type": "object",
+        "properties": {
+          "ok": {
+            "type": "boolean",
+            "default": false
+          },
+          "error": {
+            "type": "string",
+            "description": "Error type"
+          },
+          "message": {
+            "type": "string",
+            "description": "Error message"
+          }
+        }
+      }
+    }
+  },
+  "tags": [
+    {
+      "name": "Users",
+      "description": "User management endpoints"
+    },
+    {
+      "name": "Songs",
+      "description": "Song management endpoints"
+    }
+  ]
+}

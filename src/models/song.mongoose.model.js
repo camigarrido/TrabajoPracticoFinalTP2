@@ -25,6 +25,11 @@ const songSchema = new Schema(
 			type: String, // género/categoría
 			maxlength: 200,
 		},
+		createdBy: {
+			type: mongoose.Schema.Types.ObjectId,
+			ref: 'User',
+			required: true, // cada canción debe tener un creador
+		},
 	},
 	{
 		collection: "songs", // nombre de la colección
