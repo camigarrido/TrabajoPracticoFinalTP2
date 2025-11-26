@@ -6,15 +6,16 @@ const songSchema = new Schema(
 		title: {
 			type: String,
 			maxlength: 200,
-			require: true,
+			required: true,
 		},
 		author: {
 			type: String,
 			maxlength: 200,
+			required: true,
 		},
 		release_year: {
 			type: Number,
-			require: true,
+			required: true,
 		},
 		language: {
 			type: String,

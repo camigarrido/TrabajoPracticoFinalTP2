@@ -1,12 +1,13 @@
 import SongsRepository from "../repositories/songs.mongoose.repository.js";
 import { validate } from "../validators/validator.model.js";
+import { validateYear } from "../validators/validator.model.js";
 
 export const SongsController = {
 	getAllSongs: async (request, response) => {
 		try {
 			const songs = await SongsRepository.getAll();
 			response.status(200).json({
-				message: "OK",
+				message: "OK - Lista de canciones:",
 				payload: songs,
 			});
 		} catch (error) {
@@ -51,7 +52,7 @@ export const SongsController = {
 				code: 200,
 				ok: true,
 				payload: {
-					message: `La cancion :${song.name} ha sido borrada con exito`,
+					message: `La cancion :${song.title} ha sido borrada con exito`,
 				},
 			});
 		} catch (error) {
@@ -62,32 +63,49 @@ export const SongsController = {
 		}
 	},
 	createByJson: async (request, response) => {
-		try {
-			const { title, author, release_year, category } = request.body;
+		const { title, author, release_year, language, category } = request.body;
+		// Obtener todas las canciones y verificar si ya existe una con el mismo título
+		const allSongs = await SongsRepository.getAll();
+		const existingSong = allSongs.find((song) => song.title === title);
 
+		if (existingSong) {
+			return response.status(409).json({
+				message: `La canción con el título "${title}" ya existe.`,
+			});
+		}
+
+		try {
 			const validacionTitle = validate(title);
 			const validacionAuthor = validate(author);
 			const validacionYear = validateYear(release_year);
 			const validacionCategory = validate(category);
 
 			if (
-				!validacionTitle ||
-				!validacionAuthor ||
-				!validacionYear ||
-				!validacionCategory
+				!validacionTitle.valid ||
+				!validacionAuthor.valid ||
+				!validacionYear.valid ||
+				!validacionCategory.valid
 			) {
-				return response
-					.status(404)
-					.json({ message: "Completar los campos correctamente" });
+				return response.status(422).json({
+					message: "Completar los campos correctamente",
+					errors: {
+						title: validacionTitle.message,
+						author: validacionAuthor.message,
+						release_year: validacionYear.message,
+						category: validacionCategory.message,
+					},
+				});
 			}
+
+			console.log("Usuario autenticado:", request.user);
 
 			// Crear la canción con el usuario autenticado como creador
 			const newSong = await SongsRepository.createSong({
 				title,
-				artist: author,
-				year: release_year,
-				genre: category,
-				duration: 0,
+				author: author,
+				release_year: release_year,
+				language: language,
+				category: category,
 				createdBy: request.user.id,
 			});
 
@@ -100,6 +118,16 @@ export const SongsController = {
 			});
 		} catch (error) {
 			console.error("Error al crear la canción:", error);
+
+			// Manejo de errores específicos
+			if (error.name === "ValidationError") {
+				return response.status(400).json({
+					ok: false,
+					error: "Error de validación",
+					message: error.message,
+				});
+			}
+
 			response.status(500).json({
 				ok: false,
 				error: "Error interno del servidor",
@@ -134,7 +162,7 @@ export const SongsController = {
 					.json({ message: "Completar los campos correctamente" });
 			}
 
-			const song = await SongsRepository.getById(id);
+			const song = await SongsRepository.getSongById(id);
 			if (!song) {
 				response.status(404).json({
 					message: "Canción no encontrada",
@@ -182,43 +210,84 @@ export const SongsController = {
 	-Número total de canciones por autor.
 	-Años de lanzamiento promedio.
 	-Categorías más frecuentes. */
+
 	getSongsReportByAuthor: async (request, response) => {
 		try {
 			const songs = await SongsRepository.getAll();
-			if (songs.length === 0) {
+
+			if (!songs || songs.length === 0) {
 				return response.status(404).json({
-					message: "No hay canciones disponibles para generar el reporte.",
+					ok: false, // Estandarizamos respuesta
+					message: "No hay canciones disponibles.",
 				});
 			}
+
 			const report = songs.reduce((acc, song) => {
-				if (!acc[song.author]) {
-					acc[song.author] = {
+				if (!song.author) return acc;
+
+				const authorName = song.author.trim();
+				const categoryName = song.category
+					? song.category.trim()
+					: "Sin Categoría";
+				const year = song.release_year;
+
+				if (!acc[authorName]) {
+					acc[authorName] = {
 						totalSongs: 0,
 						releaseYears: [],
 						categories: {},
 					};
 				}
-				acc[song.author].totalSongs += 1;
-				acc[song.author].releaseYears.push(song.release_year);
-				acc[song.author].categories[song.category] =
-					(acc[song.author].categories[song.category] || 0) + 1;
+
+				// Lógica de acumuladores
+				acc[authorName].totalSongs += 1;
+
+				// Solo agregamos años válidos
+				if (year && !isNaN(year)) {
+					acc[authorName].releaseYears.push(year);
+				}
+
+				acc[authorName].categories[categoryName] =
+					(acc[authorName].categories[categoryName] || 0) + 1;
+
 				return acc;
 			}, {});
 
-			Object.keys(report).forEach((author) => {
-				const data = report[author];
-				data.averageReleaseYear =
-					data.releaseYears.reduce((a, b) => a + b, 0) /
-					data.releaseYears.length;
-				data.mostFrequentCategory = Object.keys(data.categories).reduce(
-					(a, b) => (data.categories[a] > data.categories[b] ? a : b),
-				);
+			// Cálculos finales (Promedios y Máximos)
+			Object.keys(report).forEach((authorKey) => {
+				const data = report[authorKey];
+
+				// Promedio
+				if (data.releaseYears.length > 0) {
+					const total = data.releaseYears.reduce((a, b) => a + b, 0);
+					data.averageReleaseYear = Math.floor(
+						total / data.releaseYears.length,
+					);
+				} else {
+					data.averageReleaseYear = null;
+				}
+
+				// Categoría Top
+				const catKeys = Object.keys(data.categories);
+				if (catKeys.length > 0) {
+					data.mostFrequentCategory = catKeys.reduce((a, b) =>
+						data.categories[a] > data.categories[b] ? a : b,
+					);
+				} else {
+					data.mostFrequentCategory = "N/A";
+				}
 			});
 
-			response.status(200).json({ report });
+			response.status(200).json({
+				ok: true,
+				reporte: report,
+			});
 		} catch (error) {
-			console.error("Error al generar el reporte:", error.message);
-			response.status(500).json({ message: "Error interno del servidor" });
+			console.error("Error reporte:", error);
+			response.status(500).json({
+				ok: false,
+				message: "Error interno del servidor",
+			});
 		}
 	},
 };

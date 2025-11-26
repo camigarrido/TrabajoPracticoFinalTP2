@@ -26,22 +26,9 @@ class SongsRepository {
 		}
 	}
 
-	async getSongById(id) {
+	async createSong(songData) {
 		try {
-			const song = await this.SongsModel.findById(id);
-			if (!song) {
-				throw new Error(`Cancion con id ${id} no encontrada`);
-			}
-			return song;
-		} catch (error) {
-			console.error("Error al obtener la cancion:", error);
-			throw new Error("Error al obtener la cancion: " + error.message);
-		}
-	}
-
-	async createSong(title, author) {
-		try {
-			const existingSong = await this.SongsModel.create({ title, author });
+			const existingSong = await this.SongsModel.create(songData);
 			return existingSong;
 		} catch (error) {
 			console.error("Error al crear la cancion:", error);

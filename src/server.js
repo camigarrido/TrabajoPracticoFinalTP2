@@ -1,9 +1,9 @@
 import express from "express";
 import SongsRouter from "./routes/songs.router.js";
 import UsersRouter from "./routes/users.router.js";
-import { fileURLToPath } from 'url';
-import { dirname, join } from 'path';
-import fs from 'fs';
+import { fileURLToPath } from "url";
+import { dirname, join } from "path";
+import fs from "fs";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -14,10 +14,10 @@ server.use(express.json());
 // Root route that serves API documentation
 server.get("/", (req, res) => {
 	const swaggerPath = join(__dirname, "..", "docs", "swagger.json");
-	
+
 	if (fs.existsSync(swaggerPath)) {
-		const swaggerDoc = JSON.parse(fs.readFileSync(swaggerPath, 'utf8'));
-		
+		const swaggerDoc = JSON.parse(fs.readFileSync(swaggerPath, "utf8"));
+
 		// Create a simple HTML page that displays the API info and links
 		const htmlResponse = `
 <!DOCTYPE html>
@@ -83,14 +83,18 @@ server.get("/", (req, res) => {
 		
 		<h2>📚 Enlaces de Documentación</h2>
 		<a href="/docs/swagger.json" class="link json-link">📄 Ver Swagger JSON</a>
-		<a href="https://editor.swagger.io/?url=${encodeURIComponent(req.protocol + '://' + req.get('host') + '/docs/swagger.json')}" class="link" target="_blank">🔧 Abrir en Swagger Editor</a>
+		<a href="https://editor.swagger.io/?url=${encodeURIComponent(req.protocol + "://" + req.get("host") + "/docs/swagger.json")}" class="link" target="_blank">🔧 Abrir en Swagger Editor</a>
 		
 		<h2>🌐 Servidores Disponibles</h2>
-		${swaggerDoc.servers.map(server => `
+		${swaggerDoc.servers
+			.map(
+				(server) => `
 			<div class="endpoint">
 				<strong>${server.description}:</strong> <code>${server.url}</code>
 			</div>
-		`).join('')}
+		`,
+			)
+			.join("")}
 		
 		<h2>📋 Principales Endpoints</h2>
 		
@@ -119,16 +123,16 @@ server.get("/", (req, res) => {
 			<code>Authorization: Bearer &lt;tu-jwt-token&gt;</code>
 		</div>
 		
-		<p><small>Desarrollado por: ${swaggerDoc.info.contact?.name || 'Team ORT TP2'}</small></p>
+		<p><small>Desarrollado por: ${swaggerDoc.info.contact?.name || "Team ORT TP2"}</small></p>
 	</div>
 </body>
 </html>`;
-		
+
 		res.send(htmlResponse);
 	} else {
 		res.status(404).json({
 			message: "Documentación no encontrada",
-			error: "El archivo swagger.json no existe"
+			error: "El archivo swagger.json no existe",
 		});
 	}
 });
@@ -136,13 +140,13 @@ server.get("/", (req, res) => {
 // Static route to serve the swagger.json file
 server.get("/docs/swagger.json", (req, res) => {
 	const swaggerPath = join(__dirname, "..", "docs", "swagger.json");
-	
+
 	if (fs.existsSync(swaggerPath)) {
-		res.setHeader('Content-Type', 'application/json');
+		res.setHeader("Content-Type", "application/json");
 		res.sendFile(swaggerPath);
 	} else {
 		res.status(404).json({
-			message: "Archivo de documentación no encontrado"
+			message: "Archivo de documentación no encontrado",
 		});
 	}
 });

@@ -8,11 +8,19 @@ export const validate = (req) => {
 export const validateYear = (year) => {
 	const currentYear = new Date().getFullYear();
 	const yearNumber = Number(year);
-	if (isNaN(yearNumber) || yearNumber < 1900 || yearNumber > currentYear) {
-		return response
-			.status(422)
-			.json({ message: "Formato de 'release_year' inválido." });
+
+	if (isNaN(yearNumber)) {
+		return { valid: false, message: "El año debe ser un número válido." };
 	}
+
+	if (yearNumber < 1900 || yearNumber > currentYear) {
+		return {
+			valid: false,
+			message: `El año debe estar entre 1900 y ${currentYear}.`,
+		};
+	}
+
+	return { valid: true, message: "Año válido." };
 };
 
 export const validateEmail = (

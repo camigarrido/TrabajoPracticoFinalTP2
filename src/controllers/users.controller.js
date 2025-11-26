@@ -3,6 +3,7 @@ import bcrypt from "bcrypt";
 import { signToken } from "../auth/index.js";
 import { validateEmail } from "../validators/validator.model.js";
 import { validate } from "../validators/validator.model.js";
+import { validateYear } from "../validators/validator.model.js";
 import PDFDocument from "pdfkit";
 
 export const UsersController = {
