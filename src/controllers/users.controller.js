@@ -77,7 +77,7 @@ export const UsersController = {
 			const validName = validate(name);
 			const validPassword = validate(password);
 
-			if (!validName || !validEmail || !validPassword) {
+			if (!validName.valid || !validEmail.valid || !validPassword.valid) {
 				return response.status(422).json({
 					message: "completar los datos correctamente",
 				});
@@ -125,10 +125,10 @@ export const UsersController = {
 		try {
 			const { email, password } = request.body;
 
-			const validateEmail = validateEmail(email);
-			const validatePassword = validate(password);
+			const emailValidation = validateEmail(email);
+			const passwordValidation = validate(password);
 
-			if (!validateEmail || !validatePassword) {
+			if (!emailValidation.valid || !passwordValidation.valid) {
 				return response.status(422).json({
 					message: "Faltan datos obligatorios: email y password",
 				});
@@ -195,7 +195,7 @@ export const UsersController = {
 
 			if (email) {
 				const validEmail = validateEmail(email);
-				if (!validEmail) {
+				if (!validEmail.valid) {
 					return response.status(422).json({
 						message: "Formato de email inválido.",
 					});
