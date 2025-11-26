@@ -9,10 +9,9 @@ export const validateYear = (year) => {
 	const currentYear = new Date().getFullYear();
 	const yearNumber = Number(year);
 	if (isNaN(yearNumber) || yearNumber < 1900 || yearNumber > currentYear) {
-		return response
-			.status(422)
-			.json({ message: "Formato de 'release_year' inválido." });
+		return { valid: false, message: "Formato de 'release_year' inválido." };
 	}
+	return { valid: true, message: "Año válido." };
 };
 
 export const validateEmail = (

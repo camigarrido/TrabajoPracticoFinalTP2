@@ -1,10 +1,11 @@
 export const updateModel = (model, data) => {
 	const updatedModel = { ...model };
 	for (const key in data) {
-		if (Object.hasOwn(updateModel, key)) {
+		if (Object.hasOwnProperty.call(data, key)) {
 			const value = data[key];
 
-			if (value !== null && value !== undefined && value !== "") {
+			// Only ignore undefined and empty strings, but allow null
+			if (value !== undefined && value !== "") {
 				updatedModel[key] = value;
 			}
 		}

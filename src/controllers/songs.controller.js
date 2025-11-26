@@ -1,5 +1,5 @@
 import SongsRepository from "../repositories/songs.mongoose.repository.js";
-import { validate } from "../validators/validator.model.js";
+import { validate, validateYear } from "../validators/validator.model.js";
 
 export const SongsController = {
 	getAllSongs: async (request, response) => {
@@ -71,10 +71,10 @@ export const SongsController = {
 			const validacionCategory = validate(category);
 
 			if (
-				!validacionTitle ||
-				!validacionAuthor ||
-				!validacionYear ||
-				!validacionCategory
+				!validacionTitle.valid ||
+				!validacionAuthor.valid ||
+				!validacionYear.valid ||
+				!validacionCategory.valid
 			) {
 				return response
 					.status(404)
@@ -124,10 +124,10 @@ export const SongsController = {
 			const validacionCategory = validate(category);
 
 			if (
-				!validacionTitle ||
-				!validacionAuthor ||
-				!validacionYear ||
-				!validacionCategory
+				!validacionTitle.valid ||
+				!validacionAuthor.valid ||
+				!validacionYear.valid ||
+				!validacionCategory.valid
 			) {
 				return response
 					.status(404)
