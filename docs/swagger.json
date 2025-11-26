@@ -13,6 +13,10 @@
     {
       "url": "http://127.0.0.1:3004",
       "description": "Development server"
+    },
+    {
+      "url": "https://your-vercel-deployment.vercel.app",
+      "description": "Production server"
     }
   ],
   "security": [
@@ -55,7 +59,7 @@
                 "example": {
                   "ok": true,
                   "payload": {
-                    "message": "Usuario creado exitosamente",
+                    "message": "El usuario John Doe fue creado exitosamente",
                     "user": {
                       "id": "64f1a2b3c4d5e6f7g8h9i0j1",
                       "name": "John Doe",
@@ -79,9 +83,20 @@
                   "$ref": "#/components/schemas/ErrorResponse"
                 },
                 "example": {
-                  "ok": false,
-                  "error": "ValidationError",
-                  "message": "Email already exists"
+                  "message": "completar los datos correctamente"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict - Email already exists",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "message": "El email ya está registrado"
                 }
               }
             }
@@ -144,16 +159,27 @@
               }
             }
           },
-          "401": {
-            "description": "Invalid credentials",
+          "422": {
+            "description": "Missing required data",
             "content": {
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponse"
                 },
                 "example": {
-                  "ok": false,
-                  "error": "AuthenticationError",
+                  "message": "Faltan datos obligatorios: email y password"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Invalid credentials or inactive user",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
                   "message": "Credenciales inválidas"
                 }
               }
@@ -198,7 +224,7 @@
                   "$ref": "#/components/schemas/UsersListResponse"
                 },
                 "example": {
-                  "ok": true,
+                  "message": "OK",
                   "payload": [
                     {
                       "id": "64f1a2b3c4d5e6f7g8h9i0j1",
@@ -297,7 +323,7 @@
                   "$ref": "#/components/schemas/UserResponse"
                 },
                 "example": {
-                  "ok": true,
+                  "message": "OK",
                   "payload": {
                     "id": "64f1a2b3c4d5e6f7g8h9i0j1",
                     "name": "John Doe",
@@ -590,7 +616,7 @@
                 "example": {
                   "ok": true,
                   "payload": {
-                    "message": "Usuario eliminado exitosamente"
+                    "message": "El usuario John Doe ha sido borrado con éxito"
                   }
                 }
               }
@@ -616,8 +642,132 @@
               }
             }
           },
-          "404": {
+          "422": {
             "description": "User not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "error": "El usuario no existe"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/users/export/users": {
+      "get": {
+        "summary": "Export users to PDF",
+        "description": "Export all users to a PDF report (authenticated users only)",
+        "tags": ["Users"],
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Bearer token for authentication",
+            "example": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "PDF report generated successfully",
+            "content": {
+              "application/pdf": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - authentication required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/users/indicators/users": {
+      "get": {
+        "summary": "Get user indicators",
+        "description": "Get statistical indicators about users (authenticated users only)",
+        "tags": ["Users"],
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Bearer token for authentication",
+            "example": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "User indicators retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserIndicatorsResponse"
+                },
+                "example": {
+                  "total de usuarios": 25,
+                  "promedio de edad": 28.5,
+                  "distribución de roles": {
+                    "user": 23,
+                    "admin": 2
+                  },
+                  "Usuario mas joven": {
+                    "id": "64f1a2b3c4d5e6f7g8h9i0j1",
+                    "name": "Young User",
+                    "age": 18
+                  },
+                  "Usuario mas grande": {
+                    "id": "64f1a2b3c4d5e6f7g8h9i0j2",
+                    "name": "Senior User",
+                    "age": 65
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - authentication required",
             "content": {
               "application/json": {
                 "schema": {
@@ -665,7 +815,7 @@
                   "$ref": "#/components/schemas/SongsListResponse"
                 },
                 "example": {
-                  "ok": true,
+                  "message": "OK",
                   "payload": [
                     {
                       "id": "64f1a2b3c4d5e6f7g8h9i0j3",
@@ -753,7 +903,7 @@
                   "$ref": "#/components/schemas/SongResponse"
                 },
                 "example": {
-                  "ok": true,
+                  "message": "OK",
                   "payload": {
                     "id": "64f1a2b3c4d5e6f7g8h9i0j3",
                     "title": "Bohemian Rhapsody",
@@ -788,9 +938,7 @@
                   "$ref": "#/components/schemas/ErrorResponse"
                 },
                 "example": {
-                  "ok": false,
-                  "error": "NotFoundError",
-                  "message": "Canción no encontrada"
+                  "error": "Cancion no encontrada"
                 }
               }
             }
@@ -834,11 +982,9 @@
               },
               "example": {
                 "title": "Imagine",
-                "artist": "John Lennon",
-                "album": "Imagine",
-                "year": 1971,
-                "genre": "Pop",
-                "duration": 183
+                "author": "John Lennon",
+                "release_year": 1971,
+                "category": "Pop"
               }
             }
           }
@@ -854,15 +1000,14 @@
                 "example": {
                   "ok": true,
                   "payload": {
-                    "message": "Canción creada exitosamente",
+                    "message": "La canción: Imagine fue creada exitosamente",
                     "song": {
                       "id": "64f1a2b3c4d5e6f7g8h9i0j5",
                       "title": "Imagine",
                       "artist": "John Lennon",
-                      "album": "Imagine",
                       "year": 1971,
                       "genre": "Pop",
-                      "duration": 183,
+                      "duration": 0,
                       "createdBy": "64f1a2b3c4d5e6f7g8h9i0j1",
                       "createdAt": "2024-11-24T12:00:00.000Z",
                       "updatedAt": "2024-11-24T12:00:00.000Z"
@@ -932,11 +1077,9 @@
               "example": {
                 "id": "64f1a2b3c4d5e6f7g8h9i0j3",
                 "title": "Bohemian Rhapsody (Remastered)",
-                "artist": "Queen",
-                "album": "A Night at the Opera (Deluxe Edition)",
-                "year": 1975,
-                "genre": "Classic Rock",
-                "duration": 355
+                "author": "Queen",
+                "release_year": 1975,
+                "category": "Classic Rock"
               }
             }
           }
@@ -952,12 +1095,11 @@
                 "example": {
                   "ok": true,
                   "payload": {
-                    "message": "Canción actualizada exitosamente",
+                    "message": "La canción: Bohemian Rhapsody (Remastered) fue actualizada exitosamente",
                     "song": {
                       "id": "64f1a2b3c4d5e6f7g8h9i0j3",
                       "title": "Bohemian Rhapsody (Remastered)",
                       "artist": "Queen",
-                      "album": "A Night at the Opera (Deluxe Edition)",
                       "year": 1975,
                       "genre": "Classic Rock",
                       "duration": 355,
@@ -987,9 +1129,7 @@
                   "$ref": "#/components/schemas/ErrorResponse"
                 },
                 "example": {
-                  "ok": false,
-                  "error": "ForbiddenError",
-                  "message": "You can only modify your own resources"
+                  "message": "No tienes permisos para actualizar esta canción"
                 }
               }
             }
@@ -1055,7 +1195,7 @@
                 "example": {
                   "ok": true,
                   "payload": {
-                    "message": "Canción eliminada exitosamente"
+                    "message": "La cancion :Bohemian Rhapsody ha sido borrada con exito"
                   }
                 }
               }
@@ -1087,6 +1227,96 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "error": "La cancion no existe"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/songs/report/songs-by-author": {
+      "get": {
+        "summary": "Get songs report by author",
+        "description": "Get a statistical report of songs grouped by author (authenticated users only)",
+        "tags": ["Songs"],
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Bearer token for authentication",
+            "example": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Songs report retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SongsReportResponse"
+                },
+                "example": {
+                  "report": {
+                    "Queen": {
+                      "totalSongs": 3,
+                      "releaseYears": [1975, 1977, 1981],
+                      "categories": {
+                        "Rock": 2,
+                        "Pop": 1
+                      },
+                      "averageReleaseYear": 1977.7,
+                      "mostFrequentCategory": "Rock"
+                    },
+                    "Led Zeppelin": {
+                      "totalSongs": 2,
+                      "releaseYears": [1969, 1971],
+                      "categories": {
+                        "Rock": 2
+                      },
+                      "averageReleaseYear": 1970,
+                      "mostFrequentCategory": "Rock"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized - authentication required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No songs available",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "message": "No hay canciones disponibles para generar el reporte."
                 }
               }
             }
@@ -1199,38 +1429,28 @@
       },
       "SongCreate": {
         "type": "object",
-        "required": ["title", "artist", "album", "year", "genre", "duration"],
+        "required": ["title", "author", "release_year", "category"],
         "properties": {
           "title": {
             "type": "string",
             "maxLength": 200,
             "description": "Song title"
           },
-          "artist": {
+          "author": {
             "type": "string",
             "maxLength": 100,
-            "description": "Song artist"
+            "description": "Song author/artist"
           },
-          "album": {
-            "type": "string",
-            "maxLength": 200,
-            "description": "Song album"
-          },
-          "year": {
+          "release_year": {
             "type": "number",
             "minimum": 1900,
             "maximum": 2100,
             "description": "Release year"
           },
-          "genre": {
+          "category": {
             "type": "string",
             "maxLength": 50,
-            "description": "Song genre"
-          },
-          "duration": {
-            "type": "number",
-            "minimum": 1,
-            "description": "Duration in seconds"
+            "description": "Song category/genre"
           }
         }
       },
@@ -1247,31 +1467,21 @@
             "maxLength": 200,
             "description": "Song title"
           },
-          "artist": {
+          "author": {
             "type": "string",
             "maxLength": 100,
-            "description": "Song artist"
+            "description": "Song author/artist"
           },
-          "album": {
-            "type": "string",
-            "maxLength": 200,
-            "description": "Song album"
-          },
-          "year": {
+          "release_year": {
             "type": "number",
             "minimum": 1900,
             "maximum": 2100,
             "description": "Release year"
           },
-          "genre": {
+          "category": {
             "type": "string",
             "maxLength": 50,
-            "description": "Song genre"
-          },
-          "duration": {
-            "type": "number",
-            "minimum": 1,
-            "description": "Duration in seconds"
+            "description": "Song category/genre"
           }
         }
       },
@@ -1513,6 +1723,73 @@
           "message": {
             "type": "string",
             "description": "Error message"
+          }
+        }
+      },
+      "UserIndicatorsResponse": {
+        "type": "object",
+        "properties": {
+          "total de usuarios": {
+            "type": "number",
+            "description": "Total number of users"
+          },
+          "promedio de edad": {
+            "type": "number",
+            "description": "Average age of users"
+          },
+          "distribución de roles": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "number"
+            },
+            "description": "Distribution of user roles"
+          },
+          "Usuario mas joven": {
+            "$ref": "#/components/schemas/User",
+            "description": "Youngest user"
+          },
+          "Usuario mas grande": {
+            "$ref": "#/components/schemas/User",
+            "description": "Oldest user"
+          }
+        }
+      },
+      "SongsReportResponse": {
+        "type": "object",
+        "properties": {
+          "report": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "object",
+              "properties": {
+                "totalSongs": {
+                  "type": "number",
+                  "description": "Total number of songs by this author"
+                },
+                "releaseYears": {
+                  "type": "array",
+                  "items": {
+                    "type": "number"
+                  },
+                  "description": "Array of release years"
+                },
+                "categories": {
+                  "type": "object",
+                  "additionalProperties": {
+                    "type": "number"
+                  },
+                  "description": "Categories and their counts"
+                },
+                "averageReleaseYear": {
+                  "type": "number",
+                  "description": "Average release year"
+                },
+                "mostFrequentCategory": {
+                  "type": "string",
+                  "description": "Most frequent category"
+                }
+              }
+            }
           }
         }
       }
