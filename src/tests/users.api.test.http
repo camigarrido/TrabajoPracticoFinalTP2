@@ -4,7 +4,7 @@
 
 # ALTERNATIVE: Use manual token setting if script blocks don't work
 @admin_token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY5MjUwZmI4ZmJiNzQ0OWI1NjFhMGVmMyIsImVtYWlsIjoiYWRtaW5AZXhhbXBsZS5jb20iLCJuYW1lIjoiQWRtaW4gVXNlciIsInJvbGUiOiJhZG1pbiIsImlhdCI6MTc2NDAzNjgyNCwiZXhwIjoxNzY0MTIzMjI0fQ.4iYs39j1uHZevMvfD8QasfMFsdsi_FRW2BkmY9l0CjY
-@user_token = peyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY5MjUxOTYyZjhiYTgwZTkwN2I1OWFmNSIsImVtYWlsIjoianVhbi5wZXJlekBleGFtcGxlLmNvbSIsIm5hbWUiOiJKdWFuIFDDqXJleiIsInJvbGUiOiJ1c2VyIiwiaWF0IjoxNzY0MDM5MDMyLCJleHAiOjE3NjQxMjU0MzJ9.GzUrBpNgLfES6WQlhOwmVCEyZUJVBo8yw26ZbXyUtzA
+@user_token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY5MjUxOTYyZjhiYTgwZTkwN2I1OWFmNSIsImVtYWlsIjoianVhbi5wZXJlekBleGFtcGxlLmNvbSIsIm5hbWUiOiJKdWFuIFDDqXJleiIsInJvbGUiOiJ1c2VyIiwiaWF0IjoxNzY0MTE1MzEzLCJleHAiOjE3NjQyMDE3MTN9.ZPIzvPBc3XWECk6sCSUrIPRZdNvcAcIgNC-uk8HRwNw
 @admin_user_id = 69250fb8fbb7449b561a0ef3
 @user_id = 69251962f8ba80e907b59af5
 
@@ -122,3 +122,8 @@ Authorization: Bearer {{user_token}}
 Content-Type: application/json
 
 ###
+GET {{Host}}:{{Port}}/{{EndpointTemplate}}/export/users
+
+
+GET {{Host}}:{{Port}}/{{EndpointTemplate}}/indicators/users
+

@@ -1,5 +1,6 @@
 import SongsRepository from "../repositories/songs.mongoose.repository.js";
-import { validate } from "../validators/validators.model.js";
+import { validate } from "../validators/validator.model.js";
+
 
 export const SongsController = {
 	getAllSongs: async (request, response) => {
@@ -43,7 +44,7 @@ export const SongsController = {
 			const song = await SongsRepository.getSongById(id);
 			console.log(song);
 			if (!song) {
-				response.status(422).json({ error: "La cancion no existe" });
+				response.status(404).json({ error: "La cancion no existe" });
 				return;
 			}
 			await SongsRepository.deleteSong(id);
@@ -51,7 +52,7 @@ export const SongsController = {
 				code: 200,
 				ok: true,
 				payload: {
-					message: `La cancion :${song.title} ha sido borrada con exito`,
+					message: `La cancion :${song.name} ha sido borrada con exito`,
 				},
 			});
 		} catch (error) {
@@ -65,23 +66,13 @@ export const SongsController = {
 		try {
 			const { title, author, release_year, category } = request.body; // Removed language, added album if needed
 
-			// Validación de datos obligatorios (updated to match model)
-			if (!title || !release_year) {
-			const { title, author } = request.body;
-
 			const validacionTitle = validate(title);
 			const validacionAuthor = validate(author);
-
-			if (!validacionTitle.valid || !validacionAuthor.valid) {
-				response.status(422).json({
-					message: "Faltan datos obligatorios: title y year",
-					message: "Faltan datos obligatorios: title y author",
-					errors: {
-						title: validacionTitle.message,
-						author: validacionAuthor.message,
-					},
-				});
-				return;
+			const validacionYear = validateYear(release_year);
+			const validacionCategory = validate(category);
+			
+			if (!validacionTitle || !validacionAuthor || !validacionYear || !validacionCategory) {
+				return response.status(404).json({ message: "Completar los campos correctamente" });
 			}
 
 			// Crear la canción con el usuario autenticado como creador
@@ -93,8 +84,6 @@ export const SongsController = {
 				duration: 0, // Default duration, adjust as needed
 				createdBy: request.user.id, // Usuario autenticado como creador
 			});
-
-			const newSong = await SongsRepository.createSong(title, author);
 
 			response.status(201).json({
 				ok: true,
@@ -118,12 +107,19 @@ export const SongsController = {
 			const { id, title, author, release_year, category } = request.body;
 
 			// Validación básica
-			const { id, title, author } = request.body;
 			if (!id) {
 				response.status(422).json({
 					message: "El id es obligatorio para actualizar la cancion",
 				});
 				return;
+			}
+			const validacionTitle = validate(title);
+			const validacionAuthor = validate(author);
+			const validacionYear = validateYear(release_year);
+			const validacionCategory = validate(category);
+			
+			if (!validacionTitle || !validacionAuthor || !validacionYear || !validacionCategory) {
+				return response.status(404).json({ message: "Completar los campos correctamente" });
 			}
 
 			// Verificar que la canción existe y pertenece al usuario
@@ -152,7 +148,6 @@ export const SongsController = {
 				duration: song.duration, // Keep existing duration or update if provided
 			});
 
-			const updated = await SongsRepository.updateSong(id, { title, author });
 			response.status(200).json({
 				ok: true,
 				payload: {
@@ -167,6 +162,49 @@ export const SongsController = {
 				error: "Error interno del servidor",
 				message: error.message,
 			});
+		}
+	},
+
+/* 	Caso de Uso: Reporte de Canciones por Autor
+	Generar un reporte que agrupe las canciones por autor y calcule estadísticas:
+	-Número total de canciones por autor.
+	-Años de lanzamiento promedio.
+	-Categorías más frecuentes. */
+	getSongsReportByAuthor: async (request, response) => {
+		try {
+			const songs = await SongsRepository.getAll();
+			if (songs.length === 0) {
+				return response.status(404).json({ message: "No hay canciones disponibles para generar el reporte." });
+			}
+			const report = songs.reduce((acc, song) => {
+				if (!acc[song.author]) {
+					acc[song.author] = {
+						totalSongs: 0,
+						releaseYears: [],
+						categories: {},
+					};
+				}
+				acc[song.author].totalSongs += 1;
+				acc[song.author].releaseYears.push(song.release_year);
+				acc[song.author].categories[song.category] = (acc[song.author].categories[song.category] || 0) + 1;
+				return acc;
+			}, {});
+
+			console.log(report);
+	
+			// Calcular estadísticas adicionales
+			Object.keys(report).forEach((author) => {
+				const data = report[author];
+				data.averageReleaseYear = data.releaseYears.reduce((a, b) => a + b, 0) / data.releaseYears.length;
+				data.mostFrequentCategory = Object.keys(data.categories).reduce((a, b) =>
+					data.categories[a] > data.categories[b] ? a : b
+				);
+			});
+	
+			response.status(200).json({ report });
+		} catch (error) {
+			console.error("Error al generar el reporte:", error.message);
+			response.status(500).json({ message: "Error interno del servidor" });
 		}
 	},
 };

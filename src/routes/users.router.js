@@ -12,6 +12,10 @@ UsersRouter.post("/login", UsersController.login);
 UsersRouter.get("/all", authenticateToken, UsersController.getAllUsers);
 UsersRouter.get("/user/:id", authenticateToken, UsersController.getById);
 
+// alta complejidad
+UsersRouter.get("/export/users", authenticateToken, UsersController.exportUsers);
+UsersRouter.get("/indicators/users", authenticateToken, UsersController.getUserIndicators);
+
 // Admin only routes
 UsersRouter.patch("/status/:id", authenticateToken, requireAdmin, UsersController.updateStatus);
 
