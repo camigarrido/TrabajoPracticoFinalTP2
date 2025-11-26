@@ -1,6 +1,5 @@
 export const validate = (req) => {
 	if (!req || req.trim() === "") {
-		// Verifica si el nombre está vacío o solo contiene espacios en blanco
 		return { valid: false, message: "El campo no puede estar vacío" };
 	}
 	return { valid: true, message: "ok" };
@@ -9,29 +8,30 @@ export const validate = (req) => {
 export const validateYear = (year) => {
 	const currentYear = new Date().getFullYear();
 	const yearNumber = Number(year);
-        if (isNaN(yearNumber) || yearNumber < 1900 || yearNumber > currentYear) {
-            return response.status(422).json({ message: "Formato de 'release_year' inválido." });
-        }
-}
+	if (isNaN(yearNumber) || yearNumber < 1900 || yearNumber > currentYear) {
+		return response
+			.status(422)
+			.json({ message: "Formato de 'release_year' inválido." });
+	}
+};
 
+export const validateEmail = (
+	email,
+	blockedDomains = ["yahoo", "netscape", "river"],
+) => {
+	const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-export const validateEmail = (email, blockedDomains = ["yahoo", "netscape", "river"]) => { //: Validar si el correo tiene un formato correcto y si pertenece a un dominio bloqueado.
+	if (!emailRegex.test(email)) {
+		return { valid: false, message: "Formato de email inválido." };
+	}
 
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/; 
+	const domain = email.split("@")[1].toLowerCase();
 
-    if (!emailRegex.test(email)) { // validacion del formato
-        return { valid: false, message: "Formato de email inválido." };
-    }
+	const isBlocked = blockedDomains.some((blocked) => domain.includes(blocked));
 
-    const domain = email.split("@")[1].toLowerCase();
-  
-    const isBlocked = blockedDomains.some((blocked) => //verificar si el dominio está en la lista de bloqueados
-        domain.includes(blocked)
-    );
+	if (isBlocked) {
+		return { valid: false, message: `No se permiten cuentas de ${domain}.` };
+	}
 
-    if (isBlocked) { 
-        return { valid: false, message: `No se permiten cuentas de ${domain}.` };
-    }
-
-    return { valid: true, message: "Email válido." };
+	return { valid: true, message: "Email válido." };
 };

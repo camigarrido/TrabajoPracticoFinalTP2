@@ -123,7 +123,9 @@ Content-Type: application/json
 
 ###
 GET {{Host}}:{{Port}}/{{EndpointTemplate}}/export/users
+Authorization: Bearer {{user_token}}
 
 
 GET {{Host}}:{{Port}}/{{EndpointTemplate}}/indicators/users
-
+Authorization: Bearer {{user_token}}
+Content-Type: application/json

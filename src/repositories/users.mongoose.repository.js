@@ -38,7 +38,6 @@ class UsersRepository {
 	async createUser(userData) {
 		try {
 			const newUser = await this.UsersModel.create(userData);
-			// Devolver el usuario sin la contraseña
 			const userResponse = newUser.toObject();
 			delete userResponse.password;
 			return userResponse;

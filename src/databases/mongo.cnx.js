@@ -12,7 +12,7 @@ class MongooseConnection {
 		}
 		try {
 			await mongoose.connect(config.MONGO_URI, {
-				dbName: "ort-database", // Mantén el nombre de la base de datos
+				dbName: "ort-database",
 			});
 			this.connection = mongoose.connection;
 			console.log("✅ Mongoose connected");

@@ -4,35 +4,35 @@ import { Schema } from "mongoose";
 const songSchema = new Schema(
 	{
 		title: {
-			type: String, // nombre de la canción
+			type: String,
 			maxlength: 200,
 			require: true,
 		},
 		author: {
-			type: String, // autor o artista
+			type: String,
 			maxlength: 200,
 		},
 		release_year: {
-			type: Number, // año de lanzamiento
+			type: Number,
 			require: true,
 		},
 		language: {
-			type: String, // idioma
+			type: String,
 			maxlength: 100,
 			default: "Unknown",
 		},
 		category: {
-			type: String, // género/categoría
+			type: String,
 			maxlength: 200,
 		},
 		createdBy: {
 			type: mongoose.Schema.Types.ObjectId,
-			ref: 'User',
-			required: true, // cada canción debe tener un creador
+			ref: "User",
+			required: true,
 		},
 	},
 	{
-		collection: "songs", // nombre de la colección
+		collection: "songs",
 		versionKey: false,
 	},
 );

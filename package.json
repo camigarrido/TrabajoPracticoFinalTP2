@@ -22,7 +22,7 @@
     "email": "",
     "url": ""
   },
-  "contributors": [],
+  "contributors": ["Camila Fernandez Garrido", "Wanda Peralta Arriaga", "Daiana Trovato"],
   "scripts": {
     "dev": "node --watch app.js",
     "linter:check": "npx @biomejs/biome lint ./src app.js",
@@ -34,7 +34,8 @@
     "express": "^5.1.0",
     "json2csv": "^6.0.0-alpha.2",
     "jsonwebtoken": "^9.0.2",
-    "mongoose": "^9.0.0"
+    "mongoose": "^9.0.0",
+    "pdfkit": "^0.17.2"
   },
   "devDependencies": {
     "@biomejs/biome": "^2.3.7"

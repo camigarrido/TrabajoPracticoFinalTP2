@@ -1,5 +1,5 @@
-import jwt from 'jsonwebtoken';
-import { config } from '../config/config.js';
+import jwt from "jsonwebtoken";
+import { config } from "../config/config.js";
 
 /**
  * Generates a JWT token for a user
@@ -10,13 +10,13 @@ import { config } from '../config/config.js';
  * @returns {string} JWT token
  */
 export function signToken(payload) {
-  if (!config.JWT_SECRET) {
-    throw new Error('JWT_SECRET is not configured');
-  }
+	if (!config.JWT_SECRET) {
+		throw new Error("JWT_SECRET is not configured");
+	}
 
-  return jwt.sign(payload, config.JWT_SECRET, {
-    expiresIn: '24h', // Token expires in 24 hours
-  });
+	return jwt.sign(payload, config.JWT_SECRET, {
+		expiresIn: "24h",
+	});
 }
 
 /**
@@ -25,13 +25,13 @@ export function signToken(payload) {
  * @returns {Object} Decoded token payload
  */
 export function verifyToken(token) {
-  if (!config.JWT_SECRET) {
-    throw new Error('JWT_SECRET is not configured');
-  }
+	if (!config.JWT_SECRET) {
+		throw new Error("JWT_SECRET is not configured");
+	}
 
-  try {
-    return jwt.verify(token, config.JWT_SECRET);
-  } catch (error) {
-    throw new Error('Invalid token');
-  }
+	try {
+		return jwt.verify(token, config.JWT_SECRET);
+	} catch (error) {
+		throw new Error("Invalid token");
+	}
 }

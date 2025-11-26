@@ -1,7 +1,6 @@
 import SongsRepository from "../repositories/songs.mongoose.repository.js";
 import { validate } from "../validators/validator.model.js";
 
-
 export const SongsController = {
 	getAllSongs: async (request, response) => {
 		try {
@@ -64,25 +63,32 @@ export const SongsController = {
 	},
 	createByJson: async (request, response) => {
 		try {
-			const { title, author, release_year, category } = request.body; // Removed language, added album if needed
+			const { title, author, release_year, category } = request.body;
 
 			const validacionTitle = validate(title);
 			const validacionAuthor = validate(author);
 			const validacionYear = validateYear(release_year);
 			const validacionCategory = validate(category);
-			
-			if (!validacionTitle || !validacionAuthor || !validacionYear || !validacionCategory) {
-				return response.status(404).json({ message: "Completar los campos correctamente" });
+
+			if (
+				!validacionTitle ||
+				!validacionAuthor ||
+				!validacionYear ||
+				!validacionCategory
+			) {
+				return response
+					.status(404)
+					.json({ message: "Completar los campos correctamente" });
 			}
 
 			// Crear la canción con el usuario autenticado como creador
 			const newSong = await SongsRepository.createSong({
 				title,
-				artist: author, // Map author to artist
-				year: release_year, // Map release_year to year
-				genre: category, // Map category to genre
-				duration: 0, // Default duration, adjust as needed
-				createdBy: request.user.id, // Usuario autenticado como creador
+				artist: author,
+				year: release_year,
+				genre: category,
+				duration: 0,
+				createdBy: request.user.id,
 			});
 
 			response.status(201).json({
@@ -106,7 +112,6 @@ export const SongsController = {
 		try {
 			const { id, title, author, release_year, category } = request.body;
 
-			// Validación básica
 			if (!id) {
 				response.status(422).json({
 					message: "El id es obligatorio para actualizar la cancion",
@@ -117,12 +122,18 @@ export const SongsController = {
 			const validacionAuthor = validate(author);
 			const validacionYear = validateYear(release_year);
 			const validacionCategory = validate(category);
-			
-			if (!validacionTitle || !validacionAuthor || !validacionYear || !validacionCategory) {
-				return response.status(404).json({ message: "Completar los campos correctamente" });
+
+			if (
+				!validacionTitle ||
+				!validacionAuthor ||
+				!validacionYear ||
+				!validacionCategory
+			) {
+				return response
+					.status(404)
+					.json({ message: "Completar los campos correctamente" });
 			}
 
-			// Verificar que la canción existe y pertenece al usuario
 			const song = await SongsRepository.getById(id);
 			if (!song) {
 				response.status(404).json({
@@ -131,21 +142,22 @@ export const SongsController = {
 				return;
 			}
 
-			// Solo el propietario o admin puede actualizar
-			if (song.createdBy.toString() !== request.user.id && request.user.role !== "admin") {
+			if (
+				song.createdBy.toString() !== request.user.id &&
+				request.user.role !== "admin"
+			) {
 				response.status(403).json({
 					message: "No tienes permisos para actualizar esta canción",
 				});
 				return;
 			}
 
-			// Actualizar la canción
 			const updatedSong = await SongsRepository.updateSong(id, {
 				title,
-				artist: author, // Map author to artist
-				year: release_year, // Map release_year to year
-				genre: category, // Map category to genre
-				duration: song.duration, // Keep existing duration or update if provided
+				artist: author,
+				year: release_year,
+				genre: category,
+				duration: song.duration,
 			});
 
 			response.status(200).json({
@@ -165,7 +177,7 @@ export const SongsController = {
 		}
 	},
 
-/* 	Caso de Uso: Reporte de Canciones por Autor
+	/* 	Caso de Uso: Reporte de Canciones por Autor
 	Generar un reporte que agrupe las canciones por autor y calcule estadísticas:
 	-Número total de canciones por autor.
 	-Años de lanzamiento promedio.
@@ -174,7 +186,9 @@ export const SongsController = {
 		try {
 			const songs = await SongsRepository.getAll();
 			if (songs.length === 0) {
-				return response.status(404).json({ message: "No hay canciones disponibles para generar el reporte." });
+				return response.status(404).json({
+					message: "No hay canciones disponibles para generar el reporte.",
+				});
 			}
 			const report = songs.reduce((acc, song) => {
 				if (!acc[song.author]) {
@@ -186,21 +200,21 @@ export const SongsController = {
 				}
 				acc[song.author].totalSongs += 1;
 				acc[song.author].releaseYears.push(song.release_year);
-				acc[song.author].categories[song.category] = (acc[song.author].categories[song.category] || 0) + 1;
+				acc[song.author].categories[song.category] =
+					(acc[song.author].categories[song.category] || 0) + 1;
 				return acc;
 			}, {});
 
-			console.log(report);
-	
-			// Calcular estadísticas adicionales
 			Object.keys(report).forEach((author) => {
 				const data = report[author];
-				data.averageReleaseYear = data.releaseYears.reduce((a, b) => a + b, 0) / data.releaseYears.length;
-				data.mostFrequentCategory = Object.keys(data.categories).reduce((a, b) =>
-					data.categories[a] > data.categories[b] ? a : b
+				data.averageReleaseYear =
+					data.releaseYears.reduce((a, b) => a + b, 0) /
+					data.releaseYears.length;
+				data.mostFrequentCategory = Object.keys(data.categories).reduce(
+					(a, b) => (data.categories[a] > data.categories[b] ? a : b),
 				);
 			});
-	
+
 			response.status(200).json({ report });
 		} catch (error) {
 			console.error("Error al generar el reporte:", error.message);

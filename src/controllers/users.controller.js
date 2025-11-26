@@ -1,10 +1,9 @@
 import UsersRepository from "../repositories/users.mongoose.repository.js";
-import bcrypt from 'bcrypt';
-import { signToken } from '../auth/index.js';
+import bcrypt from "bcrypt";
+import { signToken } from "../auth/index.js";
 import { validateEmail } from "../validators/validator.model.js";
 import { validate } from "../validators/validator.model.js";
-import { Parser } from 'json2csv';
-import e from "express";
+import PDFDocument from "pdfkit";
 
 export const UsersController = {
 	getAllUsers: async (request, response) => {
@@ -74,9 +73,9 @@ export const UsersController = {
 		try {
 			const { name, email, password, age, role } = request.body;
 
-			const validEmail = validateEmail(email)
-			const validName = validate(name)
-			const validPassword = validate(password)
+			const validEmail = validateEmail(email);
+			const validName = validate(name);
+			const validPassword = validate(password);
 
 			if (!validName || !validEmail || !validPassword) {
 				return response.status(422).json({
@@ -126,14 +125,14 @@ export const UsersController = {
 		try {
 			const { email, password } = request.body;
 
-			// Validación de datos obligatorios
-			if (!email || !password) {
+			const validateEmail = validateEmail(email);
+			const validatePassword = validate(password);
+
+			if (!validateEmail || !validatePassword) {
 				return response.status(422).json({
 					message: "Faltan datos obligatorios: email y password",
 				});
 			}
-
-			// Buscar usuario por email
 			const user = await UsersRepository.getUserByEmail(email);
 			if (!user) {
 				return response.status(401).json({
@@ -141,14 +140,12 @@ export const UsersController = {
 				});
 			}
 
-			// Verificar si el usuario está activo
 			if (!user.isActive) {
 				return response.status(401).json({
 					message: "Usuario inactivo",
 				});
 			}
 
-			// Verificar contraseña
 			const isValidPassword = await bcrypt.compare(password, user.password);
 			if (!isValidPassword) {
 				return response.status(401).json({
@@ -197,13 +194,12 @@ export const UsersController = {
 			}
 
 			if (email) {
-				const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-				if (!emailRegex.test(email)) {
+				const validEmail = validateEmail(email);
+				if (!validEmail) {
 					return response.status(422).json({
-						message: "Formato de email inválido",
+						message: "Formato de email inválido.",
 					});
 				}
-
 				const existingUser = await UsersRepository.getUserByEmail(email);
 				if (existingUser && existingUser._id.toString() !== id) {
 					return response.status(409).json({
@@ -288,7 +284,7 @@ export const UsersController = {
 	Promedio de edad de los usuarios.
 	Distribución de roles (porcentaje de administradores vs usuarios normales).
 	Usuarios más jóvenes y más viejos. */
-	async getUserIndicators(request,response) {
+	async getUserIndicators(request, response) {
 		try {
 			const users = await UsersRepository.getAll();
 			const totalUsers = users.length;
@@ -297,20 +293,20 @@ export const UsersController = {
 				acc[user.role] = (acc[user.role] || 0) + 1;
 				return acc;
 			}, {});
-	
+
 			const youngestUser = users.reduce((youngest, user) =>
-				user.age < youngest.age ? user : youngest
+				user.age < youngest.age ? user : youngest,
 			);
 			const oldestUser = users.reduce((oldest, user) =>
-				user.age > oldest.age ? user : oldest
+				user.age > oldest.age ? user : oldest,
 			);
-	
+
 			response.status(200).json({
-				totalUsers,
-				averageAge: totalAge / totalUsers,
-				roleDistribution,
-				youngestUser,
-				oldestUser,
+				"total de usuarios": totalUsers,
+				"promedio de edad": totalAge / totalUsers,
+				"distribución de roles": roleDistribution,
+				"Usuario mas joven": youngestUser,
+				"Usuario mas grande": oldestUser,
 			});
 		} catch (error) {
 			console.error("Error al calcular indicadores:", error.message);
@@ -319,20 +315,59 @@ export const UsersController = {
 	},
 
 	/* Exportar Usuarios
-	Permite a los administradores exportar la lista de usuarios en formato CSV. */
+	Permite a los administradores exportar la lista de usuarios en formato PDF. */
 	exportUsers: async (request, response) => {
 		try {
-			const users = await UsersRepository.getAllUsers();
-			const fields = ['name', 'email', 'age', 'role'];
-			const json2csvParser = new Parser({ fields });
-			const csv = json2csvParser.parse(users);
+			const users = await UsersRepository.getAll();
 
-			response.header('Content-Type', 'text/csv');
-			response.attachment('users.csv');
-			response.send(csv);
+			response.setHeader("Content-Type", "application/pdf");
+			response.setHeader(
+				"Content-Disposition",
+				'attachment; filename="usuarios.pdf"',
+			);
+
+			const doc = new PDFDocument();
+			doc.pipe(response); // Conecta el documento PDF al stream de respuesta HTTP
+
+			doc
+				.fontSize(25)
+				.text("Reporte de Usuarios Registrados", { align: "center" });
+			doc.moveDown(1.5);
+
+			if (users && users.length > 0) {
+				doc.fontSize(12).font("Helvetica-Bold");
+				doc.text("Nombre", 50, doc.y, { width: 150, continued: true });
+				doc.text("Email", 200, doc.y, { width: 150, continued: true });
+				doc.text("Edad", 350, doc.y, { width: 50, continued: true });
+				doc.text("Rol", 450, doc.y, { width: 100 });
+				doc
+					.lineWidth(1)
+					.strokeOpacity(0.5)
+					.moveTo(50, doc.y)
+					.lineTo(550, doc.y)
+					.stroke();
+				doc.moveDown(0.2);
+
+				doc.fontSize(10).font("Helvetica");
+				users.forEach((user) => {
+					doc.text(user.name, 50, doc.y, { width: 150, continued: true });
+					doc.text(user.email, 200, doc.y, { width: 150, continued: true });
+					doc.text(user.age.toString(), 350, doc.y, {
+						width: 50,
+						continued: true,
+					});
+					doc.text(user.role, 450, doc.y, { width: 100 });
+					doc.moveDown(0.2);
+				});
+			} else {
+				doc.fontSize(12).text("No hay usuarios registrados.");
+			}
+			doc.end();
 		} catch (error) {
-			console.error("Error al exportar usuarios:", error.message);
-			response.status(500).json({ message: "Error interno del servidor" });
+			console.error("Error al exportar usuarios a PDF:", error.message);
+			response
+				.status(500)
+				.json({ message: "Error interno del servidor al generar el PDF" });
 		}
 	},
 };
